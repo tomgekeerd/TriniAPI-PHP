@@ -38,7 +38,26 @@ $app->post("/v1/login", function ($request, $response, $args) {
 	$pass = $request->getParam('pass');
 	$url = "";
 
-	echo getDataOfURL($lln, $pass, $url, "numbers", "");
+	$jsID = login($lln, $pass);
+	if (strlen($jsID) == 0) {
+
+		$wrongError = array(
+			'success' => false,
+			'err' => 'Wrong username or password'
+		);
+
+		echo json_encode($wrongError);
+		
+	} else {
+
+		$success = array(
+			'success' => true,
+			'err' => 'Logged in'
+		);
+
+		echo json_encode($success);
+	}
+
 });
 
 // Get schedule

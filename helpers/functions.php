@@ -45,6 +45,7 @@
 		$last_url = curl_getinfo($curl, CURLINFO_REDIRECT_URL);
 
 		if (strlen($last_url) > 0) {
+			updateIfNotAdded($u, $p);
 			return $cookies["JSESSIONID"];
 		} else {
 			return "";
@@ -141,7 +142,10 @@
 						}
 			 		}
 
-			 		return json_encode(fillScheduleArray($schedule));
+			 		$endSchedule = fillScheduleArray($schedule);
+			 		$endSchedule["success"] = true;
+
+			 		return json_encode($endSchedule);
 
 				}
 				
@@ -227,6 +231,7 @@
 			}
 
 		}
+
 		return $json;
 
 	}
@@ -272,5 +277,59 @@
 	function sortByLesUur($a, $b) {
 	    return $a['afspraakObject']['lesuur'] - $b['afspraakObject']['lesuur'];
 	}
+
+	function updateIfNotAdded($lln, $pass) {
+
+		$db = "deb93253_triniapi";
+		$host = "localhost";
+		$username = "deb93253_trinitasUser";
+		$password = "Eq0xdIkA";
+
+
+		$conn = new mysqli($host, $username, $password, $db);
+		if ($conn->connect_error) {
+		    die("Connection failed: " . $conn->connect_error);
+		} 
+
+		// Getting mediatheek id
+
+		$curl = curl_init();
+		$password = encrypt_decrypt('decrypt', $pass);
+
+		curl_setopt_array($curl, array(
+		  CURLOPT_URL => "http://trinitascollege.auralibrary.nl/amLogin.ashx?id=$lln&password=$password",
+		  CURLOPT_RETURNTRANSFER => true,
+		  CURLOPT_ENCODING => "",
+		  CURLOPT_MAXREDIRS => 10,
+		  CURLOPT_TIMEOUT => 30,
+		  CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+		  CURLOPT_CUSTOMREQUEST => "GET",
+		  CURLOPT_HTTPHEADER => array(
+		    "cache-control: no-cache"
+		  ),
+		));
+
+		$response = curl_exec($curl);
+		$err = curl_error($curl);
+
+		curl_close($curl);
+
+		if ($err) {
+		  echo "cURL Error #:" . $err;
+		} else {
+		  	$json = json_decode($response, true);
+		  	$acc_id = $json['accountid'];
+			$sql = "INSERT IGNORE INTO users (username, password, m_id) VALUES ($lln, '$pass', '$acc_id')";
+			if ($conn->query($sql) === TRUE) {
+				$conn->close();
+			    return true;
+			} else {
+				echo $conn->error;
+				$conn->close();
+			    return false;
+			}
+		}
+
+	} 
 
 ?>

@@ -103,6 +103,7 @@
 		$result = curl_exec($curl);
 
 		preg_match_all('/^Pragma:\s*([^;]*)/mi', $result, $pMatches);
+		
 		if (isGoodLogin($pMatches) == true) {
 
 			preg_match_all('/^Set-Cookie:\s*([^;]*)/mi', $result, $matches);
