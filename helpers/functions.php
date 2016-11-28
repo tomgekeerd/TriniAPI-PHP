@@ -258,17 +258,59 @@
 			}
 		}
 
+
+		for ($in=0; $in < count($dayArray); $in++) { 
+			
+			$firstHoursFree[] = [];
+			$betweenHours[] = [];
+
+			foreach ($freeHours[$in] as $key => $value) {
+
+				// First hours off
+
+				if (($value == 1 && in_array($value, $freeHours[$in])) || ($value > 1 && in_array($value - 1, $firstHoursFree[$in]))) {
+					$firstHoursFree[$in][] = $value;
+				} else if ($value > 1 && $value != 8 && in_array($value - 1, $freeHours[$in]) == false && in_array($value + 1, $freeHours[$in]) == false) {
+					// Between hour
+					$betweenHours[$in][] = $value;
+				}
+
+			}
+
+		}
+
 		
 		for ($in=0; $in < count($dayArray); $in++) { 
 			foreach ($freeHours[$in] as $key => $value) {
-				$templateObject = array(
-					'afspraakObject' => array('lesuur' => $value, 'type' => 'Vrij'),
-					'day' => $dayArray[$in]);
-				$schedule[$dayArray[$in]][] = $templateObject;
+
+				if (in_array($value, $firstHoursFree[$in])) {
+
+					$freeObject = array(
+						'afspraakObject' => array('lesuur' => $value, 'type' => 'Eerste uur vrij'),
+						'day' => $dayArray[$in]);
+					$schedule[$dayArray[$in]][] = $freeObject;
+
+				} else if (in_array($value, $betweenHours[$in])) {
+
+					$freeObject = array(
+						'afspraakObject' => array('lesuur' => $value, 'type' => 'Tussenuur'),
+						'day' => $dayArray[$in]);
+					$schedule[$dayArray[$in]][] = $freeObject;
+
+				} else {
+
+					$freeObject = array(
+						'afspraakObject' => array('lesuur' => $value, 'type' => 'Vrij'),
+						'day' => $dayArray[$in]);
+					$schedule[$dayArray[$in]][] = $freeObject;
+
+				}
 
 				usort($schedule[$dayArray[$in]], 'sortByLesUur');
+
 			}
 		}
+
 
 		return $schedule;
 
