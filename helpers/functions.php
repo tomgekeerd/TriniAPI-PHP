@@ -123,14 +123,26 @@
 					// Return schedule
 
 					$json = json_decode($response, true);
+
+					$dates = [];
 			 		$schedule = [];
 
+			 		$day = new DateTime($sd);
+					$week = $day->format("W");
+					$year = $day->format("Y");
+
+					for ($i=1; $i < 6; $i++) { 
+						$date = date('d-m-y', strtotime($year."W".$week.$i));
+						if (!in_array($date, $dates)) {
+			 				$dates[] = $date;
+			 			}
+					}
+
 			 		for ($i=0; $i < count($json["events"]); $i++) { 
+
 			 			$uur = $json["events"][$i];
 						$day = date('l', $uur["start"] / 1000);
 
-						$date = new DateTime($sd);
-						$week = $date->format("W");
 						$schedule["w_no"] = $week;
 						$uur["day"] = $day;
 
@@ -140,8 +152,10 @@
 						} else {
 							$schedule[$day][] = $uur;
 						}
+
 			 		}
 
+			 		$schedule["dates"] = $dates;
 			 		$endSchedule = fillScheduleArray($schedule);
 			 		$endSchedule["success"] = true;
 
@@ -311,6 +325,13 @@
 			}
 		}
 
+		for ($in=0; $in < count($dayArray); $in++) { 
+			for ($i=0; $i < count($schedule[$dayArray[$in]]); $i++) { 
+				$schedule[$dayArray[$in]][$i]["date"] = $schedule["dates"][$in];
+			}
+		}
+
+		unset($schedule["dates"]);
 
 		return $schedule;
 
@@ -326,7 +347,6 @@
 		$host = "localhost";
 		$username = "deb93253_trinitasUser";
 		$password = "Eq0xdIkA";
-
 
 		$conn = new mysqli($host, $username, $password, $db);
 		if ($conn->connect_error) {
