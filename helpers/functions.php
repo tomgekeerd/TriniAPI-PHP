@@ -145,6 +145,7 @@
 
 						$schedule["w_no"] = $week;
 						$uur["day"] = $day;
+						$uur["lesFormat"] = getGoodClassName($uur["afspraakObject"]["lesgroep"]);
 
 						if (array_key_exists($day, $schedule) == false) {
 							$schedule[$day] = [];
@@ -292,37 +293,57 @@
 			}
 
 		}
-
 		
 		for ($in=0; $in < count($dayArray); $in++) { 
-			foreach ($freeHours[$in] as $key => $value) {
 
-				if (in_array($value, $firstHoursFree[$in])) {
+			// Check for free days
 
-					$freeObject = array(
-						'afspraakObject' => array('lesuur' => $value, 'type' => 'Eerste uur vrij'),
-						'day' => $dayArray[$in]);
-					$schedule[$dayArray[$in]][] = $freeObject;
+			if (count($freeHours[$in]) == 8)  {
 
-				} else if (in_array($value, $betweenHours[$in])) {
-
-					$freeObject = array(
-						'afspraakObject' => array('lesuur' => $value, 'type' => 'Tussenuur'),
-						'day' => $dayArray[$in]);
-					$schedule[$dayArray[$in]][] = $freeObject;
-
-				} else {
+				foreach ($freeHours[$in] as $key => $value) {
 
 					$freeObject = array(
 						'afspraakObject' => array('lesuur' => $value, 'type' => 'Vrij'),
 						'day' => $dayArray[$in]);
 					$schedule[$dayArray[$in]][] = $freeObject;
 
+					usort($schedule[$dayArray[$in]], 'sortByLesUur');
+
 				}
 
-				usort($schedule[$dayArray[$in]], 'sortByLesUur');
+			} else {
+				
+				foreach ($freeHours[$in] as $key => $value) {
+
+					if (in_array($value, $firstHoursFree[$in])) {
+
+						$freeObject = array(
+							'afspraakObject' => array('lesuur' => $value, 'type' => 'Eerste uur vrij'),
+							'day' => $dayArray[$in]);
+						$schedule[$dayArray[$in]][] = $freeObject;
+
+					} else if (in_array($value, $betweenHours[$in])) {
+
+						$freeObject = array(
+							'afspraakObject' => array('lesuur' => $value, 'type' => 'Tussenuur'),
+							'day' => $dayArray[$in]);
+						$schedule[$dayArray[$in]][] = $freeObject;
+
+					} else {
+
+						$freeObject = array(
+							'afspraakObject' => array('lesuur' => $value, 'type' => 'Vrij'),
+							'day' => $dayArray[$in]);
+						$schedule[$dayArray[$in]][] = $freeObject;
+
+					}
+
+					usort($schedule[$dayArray[$in]], 'sortByLesUur');
+
+				}
 
 			}
+		
 		}
 
 		for ($in=0; $in < count($dayArray); $in++) { 
@@ -334,6 +355,40 @@
 		unset($schedule["dates"]);
 
 		return $schedule;
+
+	}
+
+	function getGoodClassName($s) {
+
+		if(strpos($s, "wisB"))return "Wiskunde B";
+		else if(strpos($s, "mur"))return "Mentoruur";
+		else if(strpos($s, "wisD"))return "Wiskunde D";
+		else if(strpos($s, "wisA"))return "Wiskunde A";
+		else if(strpos($s, "wisC"))return "Wiskunde C";
+		else if(strpos($s, "nat"))return "Natuurkunde";
+		else if(strpos($s, "entl"))return "Engels";
+		else if(strpos($s, "schk"))return "Scheikunde";
+		else if(strpos($s, "dutl"))return "Duits";
+		else if(strpos($s, "netl"))return "Nederlands";
+		else if(strpos($s, "in"))return "Informatica";
+		else if(strpos($s, "lo"))return "Gym";
+		else if(strpos($s, "mu"))return "Muziek";
+		else if(strpos($s, "ak"))return "Aardrijkskunde";
+		else if(strpos($s, "bi"))return "Biologie";
+		else if(strpos($s, "ne"))return "Nederlands";
+		else if(strpos($s, "du"))return "Duits";
+		else if(strpos($s, "fa"))return "Frans";
+		else if(strpos($s, "tn"))return "Techniek";
+		else if(strpos($s, "wi"))return "Wiskunde";
+		else if(strpos($s, "na"))return "Natuurkunde";
+		else if(strpos($s, "en"))return "Engels";
+		else if(strpos($s, "hv"))return "Handvaardigheid";
+		else if(strpos($s, "gs"))return "Geschiedenis";
+		else if(strpos($s, "ges"))return "Geschiedenis";
+		else if(strpos($s, "lv"))return "Levo";
+		else if(strpos($s, "econ"))return "Economie";
+		else if(strpos($s, "ec"))return "Economie";
+        else return $s;
 
 	}
 
